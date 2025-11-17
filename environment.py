@@ -2,11 +2,13 @@ import numpy as np
 
 RED = 1
 YELLOW = -1
+ROWS = 6
+COLS = 7 
 
 class Connect4 ():
     def __init__(self):
-        self.rows = 6
-        self.cols = 7
+        self.rows = ROWS
+        self.cols = COLS
         self.mat = np.zeros((self.rows, self.cols) , dtype=int)
 
     def print_board(self):
