@@ -152,7 +152,7 @@ def playable_threat(board, cells, start_pos, direction):
     
 
 
-
+"""
 board = np.array([
     [0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0],
@@ -169,9 +169,4 @@ print(f"Score for player 1: {score_player1}")
 # Evaluate for player 2  
 score_player2 = heuristic(board, 2, 1)
 print(f"Score for player 2: {score_player2}")
-
-        
-
-
-
-
+"""

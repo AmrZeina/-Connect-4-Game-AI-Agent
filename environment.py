@@ -13,30 +13,26 @@ class Connect4 ():
         print(self.mat)
     
     def isTerminal(self):
-        for col in range(self.cols -1):
-            if self.mat[self.rows - 1][col] == 0:
-                return False
-        return True
-    
-    def addPeice(self, type, row, col):
-        if self.mat[row][col] == 0:
-            if type == RED:
-                self.mat[row][col] = 1
-            else :
-                self.mat[row][col] = -1
-        else :
-            print("Error: Slot is not empty!")
+        return np.all(self.mat[0] != 0)
+
+    def addPiece(self, piece, col):
+        for row in range(self.rows - 1, -1, -1):
+            if self.mat[row][col] == 0:
+                self.mat[row][col] = piece
+                return True
+        return False
 
     def getChildren(self, type):
         children = []
         for i in range (self.cols):
             for j in range(self.rows-1 , -1 , -1):
                 if self.mat[j][i] == 0:
-                    child = self.mat.copy()
+                    child = Connect4()
+                    child.mat = self.mat.copy()
                     if type == RED:
-                        child[j][i] = 1
+                        child.mat[j][i] = 1
                     else:
-                        child[j][i] = -1
+                        child.mat[j][i] = -1
                     children.append(child)
                     break
         return children
