@@ -8,12 +8,28 @@ def heuristic(board, player_piece, opponent_piece):
     WEIGHT_THREE=100    #the score for a 3 in a row
     WEIGHT_TWO=10   #the score for a 2 in a row
 
-    center_column=[i for i in list(board[:,board.shape[1]//2])] #to extract the center column
+    center_column=[i for i in list(board[:,COLUMNS//2])] #to extract the center column
     center_count=center_column.count(player_piece)
     score+=center_count*3
 
+    player_threats=0
+    opponent_threats=0
+
     for window in get_all_windows(board):
-        score+=evaluate_window(window,player_piece, opponent_piece, WEIGHT_THREE, WEIGHT_TWO)
+        window_score,window_player_threat,window_opponent_threat=evaluate_window(window,player_piece, opponent_piece, WEIGHT_THREE, WEIGHT_TWO)
+        score+=window_score
+      
+        #Evaluating Multiple threats(The next step will be a win definitely)
+        if window_player_threat:
+            player_threats += 1
+        if window_opponent_threat:
+            opponent_threats += 1
+    #if there exist more than 2 threats, we must add a large penalty +/-
+    if opponent_threats>=2:
+        score-=WEIGHT_THREE*10
+    if player_threats>=2:
+        score+=WEIGHT_THREE*8
+
     
     return score
 
@@ -52,6 +68,9 @@ def evaluate_window(window,player_piece, opponent_piece, WEIGHT_THREE, WEIGHT_TW
     opponent_count=window.count(opponent_piece)
     empty_count=window.count(0)
 
+    player_threat=False
+    opponent_threat=False
+
     if player_count==4:
         score+=1000000000
     elif opponent_count==4:
@@ -59,15 +78,17 @@ def evaluate_window(window,player_piece, opponent_piece, WEIGHT_THREE, WEIGHT_TW
 
     elif player_count==3 and empty_count==1:
         score+=WEIGHT_THREE
+        player_threat=True
     elif player_count==2 and empty_count==2:
         score+=WEIGHT_TWO
     
     if opponent_count == 3 and empty_count == 1:
-        score -= WEIGHT_THREE*1.5
+        score -= WEIGHT_THREE*2
+        opponent_threat=True
     elif opponent_count == 2 and empty_count == 2:
         score -= WEIGHT_TWO
 
-    return score
+    return score,player_threat,opponent_threat
 
 
 
