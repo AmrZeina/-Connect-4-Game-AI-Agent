@@ -11,7 +11,13 @@ class Connect4 ():
 
     def print_board(self):
         print(self.mat)
-
+    
+    def isTerminal(self):
+        for col in range(self.cols -1):
+            if self.mat[self.rows - 1][col] == 0:
+                return False
+        return True
+    
     def addPeice(self, type, row, col):
         if self.mat[row][col] == 0:
             if type == RED:
