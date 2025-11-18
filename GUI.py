@@ -6,6 +6,7 @@ import Heuristic
 import Minimax                
 import Minimax_alpha_beta     
 import Expected_Minimax       
+import copy
 
 
 pygame.init()
@@ -18,7 +19,7 @@ WIDTH = COLS * SQUARE_SIZE
 HEIGHT = (ROWS + 1) * SQUARE_SIZE
 WINDOW_SIZE = (WIDTH, HEIGHT)
 
-#Colors
+# Colors
 BLUE = (30, 80, 200)
 BLACK = (0, 0, 0)
 RED_COLOR = (220, 40, 40)
@@ -61,14 +62,14 @@ class Connect4GUI:
         self.tree_nodes = []
 
     def draw_board(self):
-        #Clear entire screen with white background
+        # Clear entire screen with white background
         self.screen.fill(WHITE)
         
-        #Draw header section with white background
+        # Draw header section with white background
         header_rect = pygame.Rect(0, 0, WIDTH, SQUARE_SIZE)
         pygame.draw.rect(self.screen, WHITE, header_rect)
         
-        #Draw header text with black color
+        # Draw header text with black color
         algorithm_text = FONT.render(f"Algorithm: {self.ai_algorithm}", True, BLACK)
         depth_text = FONT.render(f"Depth: {self.depth}", True, BLACK)
         
@@ -91,15 +92,15 @@ class Connect4GUI:
             info = SMALL_FONT.render(self.last_ai_msg, True, BLACK)
             self.screen.blit(info, (10, 60))
 
-        #Board squares
+        # Board squares
         for c in range(COLS):
             for r in range(ROWS):
-                #Draw blue square for board
+                # Draw blue square for board
                 pygame.draw.rect(
                     self.screen, BLUE,
                     (c * SQUARE_SIZE, (r + 1) * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
                 )
-                #Draw white circle for empty slot
+                # Draw white circle for empty slot
                 pygame.draw.circle(
                     self.screen, WHITE,
                     (int(c * SQUARE_SIZE + SQUARE_SIZE / 2),
@@ -107,7 +108,7 @@ class Connect4GUI:
                     RADIUS
                 )
 
-        #Draw game pieces
+        # Draw game pieces
         for c in range(COLS):
             for r in range(ROWS):
                 val = self.game.mat[r][c]
@@ -144,7 +145,7 @@ class Connect4GUI:
         tree_surface.blit(title, (10, 10))
         
         y_offset = 40
-        for i, node in enumerate(self.tree_nodes[:15]):  #Limit to 15 nodes for display
+        for i, node in enumerate(self.tree_nodes[:15]):  # Limit to 15 nodes for display
             if y_offset > tree_height - 30:
                 break
                 
@@ -158,12 +159,12 @@ class Connect4GUI:
             
             y_offset += 35
         
-        #Draw info about total nodes
+        # Draw info about total nodes
         info_text = f"Showing {min(len(self.tree_nodes), 15)} of {len(self.tree_nodes)} nodes"
         info_surface = TREE_FONT.render(info_text, True, BLACK)
         tree_surface.blit(info_surface, (10, tree_height - 20))
         
-        #Blit tree surface to main screen
+        # Blit tree surface to main screen
         self.screen.blit(tree_surface, (WIDTH - tree_width - 10, SQUARE_SIZE + 10))
 
     def human_move(self, x):
@@ -177,7 +178,7 @@ class Connect4GUI:
         board = self.game.mat
         count = 0
         
-        #Check horizontal
+        # Check horizontal
         for r in range(ROWS):
             for c in range(COLS - 3):
                 if (board[r][c] == piece and 
@@ -186,7 +187,7 @@ class Connect4GUI:
                     board[r][c+3] == piece):
                     count += 1
         
-        #Check vertical
+        # Check vertical
         for r in range(ROWS - 3):
             for c in range(COLS):
                 if (board[r][c] == piece and 
@@ -195,7 +196,7 @@ class Connect4GUI:
                     board[r+3][c] == piece):
                     count += 1
         
-        #Check diagonal positive (\)
+        # Check diagonal positive (\)
         for r in range(ROWS - 3):
             for c in range(COLS - 3):
                 if (board[r][c] == piece and 
@@ -204,7 +205,7 @@ class Connect4GUI:
                     board[r+3][c+3] == piece):
                     count += 1
         
-        #Check diagonal negative (/)
+        # Check diagonal negative (/)
         for r in range(3, ROWS):
             for c in range(COLS - 3):
                 if (board[r][c] == piece and 
@@ -236,17 +237,20 @@ class Connect4GUI:
         best_col = None
         
         for child in children:
-            #Detect which column changed
+            # Detect which column changed - convert to list comparison
             col = None
             for c in range(COLS):
-                if any(child.mat[:, c] != self.game.mat[:, c]):
+                # Convert columns to lists and compare
+                current_col = [self.game.mat[r][c] for r in range(ROWS)]
+                child_col = [child.mat[r][c] for r in range(ROWS)]
+                if current_col != child_col:
                     col = c
                     break
             
             if col is not None:
                 heuristic_val = Heuristic.heuristic(child.mat, self.ai_piece, self.human_piece)
                 
-                #Track the best move
+                # Track the best move
                 if heuristic_val > best_heuristic:
                     best_heuristic = heuristic_val
                     best_col = col
@@ -264,7 +268,7 @@ class Connect4GUI:
                     node['selected'] = True
                     break
 
-    #AI LOGIC
+    # AI LOGIC
     def ai_move(self):
         start = time.time()
 
@@ -306,9 +310,12 @@ class Connect4GUI:
                 return
 
         else:
-            # Detect which column changed
+            # Detect which column changed - convert to list comparison
             for c in range(COLS):
-                if any(self.game.mat[:, c] != chosen_child.mat[:, c]):
+                # Convert columns to lists and compare
+                current_col = [self.game.mat[r][c] for r in range(ROWS)]
+                child_col = [chosen_child.mat[r][c] for r in range(ROWS)]
+                if current_col != child_col:
                     chosen_col = c
                     break
 
@@ -327,9 +334,9 @@ class Connect4GUI:
         self.analyze_tree()
 
     def check_game_end(self):
-        #Check if board is full
+        # Check if board is full
         if self.game.isTerminal():
-            #Board is full, now determine winner by counting connected fours
+            # Board is full, now determine winner by counting connected fours
             self.winner = self.determine_winner()
             self.game_over = True
             return True
@@ -340,13 +347,13 @@ class Connect4GUI:
         clock = pygame.time.Clock()
         
         while self.running:
-            #Control frame rate
+            # Control frame rate
             clock.tick(60)
             
-            #Always draw the board first
+            # Always draw the board first
             self.draw_board()
             
-            #Draw tree panel if enabled
+            # Draw tree panel if enabled
             if self.show_tree:
                 self.draw_tree_panel()
                 pygame.display.update()
@@ -403,7 +410,7 @@ class Connect4GUI:
                             self.draw_board()
                             self.check_game_end()
 
-                #Reset game if it's over and space is pressed
+                # Reset game if it's over and space is pressed
                 elif self.game_over and event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
                         self.reset(self.ai_algorithm, self.depth)
