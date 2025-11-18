@@ -1,4 +1,3 @@
-import numpy as np
 ROWS=6
 COLUMNS=7
 
@@ -8,8 +7,8 @@ def heuristic(board, player_piece, opponent_piece):
     WEIGHT_THREE=100    #the score for a 3 in a row
     WEIGHT_TWO=10   #the score for a 2 in a row
 
-    center_column=[i for i in list(board[:,COLUMNS//2])] #to extract the center column
-    center_count=center_column.count(player_piece)
+    center_index = COLUMNS // 2
+    center_count = sum(1 for row in board if row[center_index] == player_piece)
     score+=center_count*3
 
     player_threats=0
@@ -44,7 +43,7 @@ def get_all_windows(board):
     for r in range (ROWS):
         for c in range(COLUMNS-3):  #for 7 columns we have 4 distinct horizontal windows of size 4 
             windows.append({
-                'cells': [board[r,c], board[r,c+1], board[r,c+2], board[r,c+3]],
+                'cells': [board[r][c], board[r][c+1], board[r][c+2], board[r][c+3]],
                 'start_pos': (r,c),
                 'direction': 'horizontal'
             })       
@@ -53,7 +52,7 @@ def get_all_windows(board):
     for c in range(COLUMNS):
         for r in range (ROWS-3):
             windows.append({
-                'cells': [board[r,c], board[r+1,c], board[r+2,c], board[r+3,c]],
+                'cells': [board[r][c], board[r+1][c], board[r+2][c], board[r+3][c]],
                 'start_pos': (r,c),
                 'direction': 'vertical'
             })    
@@ -62,7 +61,7 @@ def get_all_windows(board):
     for r in range(3,ROWS):
         for c in range(COLUMNS-3):
             windows.append({
-                'cells': [board[r,c], board[r-1,c+1], board[r-2,c+2], board[r-3,c+3]],
+                'cells': [board[r][c], board[r-1][c+1], board[r-2][c+2], board[r-3][c+3]],
                 'start_pos': (r,c),
                 'direction': 'diagonal_negative'
             })    
@@ -71,7 +70,7 @@ def get_all_windows(board):
     for r in range (ROWS-3):
         for c in range(COLUMNS-3):
             windows.append({
-                'cells': [board[r,c], board[r+1,c+1], board[r+2,c+2], board[r+3,c+3]],
+                'cells': [board[r][c], board[r+1][c+1], board[r+2][c+2], board[r+3][c+3]],
                 'start_pos': (r,c),
                 'direction': 'diagonal_positive'
             })    
@@ -128,6 +127,9 @@ def playable_threat(board, cells, start_pos, direction):
             window_empty_position=i
             break
 
+    if window_empty_position is None:
+        return False
+        
     #finding empty cell position within the board
     #horizontal
     if direction =='horizontal':
@@ -145,7 +147,7 @@ def playable_threat(board, cells, start_pos, direction):
     empty_r, empty_c = board_empty_position
     if empty_r == 0:
         return True
-    elif board[empty_r - 1 , empty_c ] !=0:
+    elif board[empty_r - 1][empty_c] !=0:
         return True
     else: 
         return False
